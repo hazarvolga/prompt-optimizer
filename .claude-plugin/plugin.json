@@ -1,0 +1,21 @@
+{
+  "name": "prompt-optimizer",
+  "version": "1.0.0",
+  "description": "Two-gear (Full + /small surgical), model-aware prompt compiler and pre-execution contract gate for Claude 5.x, Gemini, Codex, and local coding agents.",
+  "author": {
+    "name": "Hazar Volga Ekiz",
+    "url": "https://hazarvolga.com.tr"
+  },
+  "license": "MIT",
+  "keywords": [
+    "prompt-engineering",
+    "claude-code",
+    "agent-skills",
+    "opus-5-5",
+    "sonnet-5-5",
+    "anti-overengineering",
+    "cursor",
+    "codex",
+    "antigravity"
+  ]
+}
