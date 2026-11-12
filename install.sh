@@ -31,13 +31,15 @@ if [ -d "$HOME/.codex" ]; then
   echo "  ✓ OpenAI Codex (~/.codex/skills)"
 fi
 
-# 4. Antigravity / Gemini (~/.gemini/config/skills) if ~/.gemini/config exists
-if [ -d "$HOME/.gemini/config" ]; then
-  mkdir -p "$HOME/.gemini/config/skills"
-  rm -rf "$HOME/.gemini/config/skills/prompt-optimizer"
-  cp -R "$SKILL_SRC" "$HOME/.gemini/config/skills/prompt-optimizer"
-  echo "  ✓ Antigravity / Gemini (~/.gemini/config/skills)"
-fi
+# 4. Antigravity / Gemini: both layouts are in use (~/.gemini/config/skills and ~/.gemini/skills)
+for GEMINI_SKILLS in "$HOME/.gemini/config/skills" "$HOME/.gemini/skills"; do
+  if [ -d "$(dirname "$GEMINI_SKILLS")" ] && { [ -d "$GEMINI_SKILLS" ] || [ "$GEMINI_SKILLS" = "$HOME/.gemini/config/skills" ]; }; then
+    mkdir -p "$GEMINI_SKILLS"
+    rm -rf "$GEMINI_SKILLS/prompt-optimizer"
+    cp -R "$SKILL_SRC" "$GEMINI_SKILLS/prompt-optimizer"
+    echo "  ✓ Antigravity / Gemini ($GEMINI_SKILLS)"
+  fi
+done
 
 # 5. MLX-Serve (~/.mlx-serve/skills) if ~/.mlx-serve exists
 if [ -d "$HOME/.mlx-serve" ]; then

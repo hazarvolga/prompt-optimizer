@@ -28,14 +28,14 @@ Synthesized best practices for modern Claude models covering structure, context 
 
 ## 4. Output Formatting & Prefill Migration
 - **Positive framing:** Tell the model what format to produce (*"Write in clear, flowing prose paragraphs"*) rather than only what to avoid.
-- **No Assistant Prefill (Claude 4.6+):** Prefilling the final `assistant` turn returns HTTP `400`.
+- **No Assistant Prefill (Claude 4.6+):** Prefilling the final `assistant` turn returns HTTP `400` on Opus 4.6 / 4.7 / 4.8, Sonnet 4.6, Opus 5 / 5.5, Sonnet 5 / 5.5, Haiku 5.5 and Fable 5 / 5.1 / 5.2. Haiku 4.5 and older still accept it. *(Verified 2026-11-12 against the Claude API reference.)*
   - Schema enforcement → use **Structured Outputs** (`output_config.format`) or strict tool schemas.
   - Skipping preambles → add *"Respond directly without preamble. Do not open with 'Here is...' or 'Based on...'."*
   - Resuming interrupted generations → request continuation inside the `user` turn along with the trailing snippet.
 - **Plain-text / TTS formatting:** Explicitly forbid LaTeX (`\( \)`, `$`, `\frac`) when targeting plain-text UIs or voice pipelines.
 
 ## 5. Adaptive Thinking, Effort & Preserved Thinking
-- **No `budget_tokens` (Claude 4.7+):** Manual `budget_tokens` returns HTTP `400`. Use `thinking: {"type": "adaptive"}` and calibrate depth with `output_config: {"effort": "low" | "medium" | "high" | "xhigh" | "max"}`.
+- **No `budget_tokens` (Claude 4.7+):** Manual `budget_tokens` returns HTTP `400` on Opus 4.7 / 4.8 / 5 / 5.5, Sonnet 5 / 5.5, Haiku 5.5 and Fable 5 / 5.1 / 5.2. On Opus 4.6 and Sonnet 4.6 it is deprecated but still accepted (transitional only). Use `thinking: {"type": "adaptive"}` and calibrate depth with `output_config: {"effort": "low" | "medium" | "high" | "xhigh" | "max"}`; `xhigh` exists from Opus 4.7 on (Opus 4.6 / Sonnet 4.6 stop at `max` without `xhigh`). Default effort is `high`, except Opus 5.5 and Haiku 5.5 where it is `medium`: set it explicitly. On Opus 4.7 / 4.8, omitting `thinking` runs without thinking, so send `{"type": "adaptive"}` explicitly. *(Verified 2026-11-12 against the Claude API reference.)*
 - **Size `max_tokens` for thinking + reply:** Thinking tokens count toward `max_tokens` (up to `128000` with streaming for agentic coding).
 - **Avoid `reasoning_extraction` refusals:** Never prompt Claude 5.x / Fable 5.x to reproduce its internal chain-of-thought inside visible response text. Read `display: "summarized"` thinking blocks via the API if reasoning inspection is required.
 - **Append-Only History (`Preserved Thinking`):** Never mutate `system`, `tools`, or earlier turns mid-conversation; prefix edits invalidate preserved thinking blocks (returning `400` on strict models and breaking Prompt Cache). Use per-message effort changes or mid-conversation system messages instead.
