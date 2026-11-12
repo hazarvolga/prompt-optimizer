@@ -40,6 +40,30 @@ Modern frontier models fail in two predictable ways when given raw human prompts
 | **Gear 1: `/small` Surgical Mode ⚡** | Start message with `/small` | Zero interview. Reads target file, locks **zero-collateral-edit** rules, and presents a **3-line compact approval card**. |
 | **Gear 2: Full Contract Mode 🎯** | Features, refactors, RAG, architecture, `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` | Silent repo recon + **0–3 dynamic skill matches** → **0 questions** if clear (at most **1 plain question** if critically ambiguous) → compiles XML/Markdown contract (`<active_skills>`) → single-pass approval gate. |
 
+### Dynamic Skill Discovery & Single-Card Confirmation (`v1.2.0`)
+
+Even when an agent understands the topic of your prompt, it often skips opening the matching domain `SKILL.md` files in `Claude Code` or `Codex` because it already loaded `prompt-optimizer` in that turn (or because you pasted the compiled `<details>` contract into a fresh window). Conversely, stopping for a separate message just to ask *"Should I use skills X and Y?"* would force you to approve twice.
+
+`v1.2.0` solves both problems inside the **single Gear 2 Approval Card**:
+- **Runtime-Dynamic (Zero Hardcoded Names):** Scans the skills actually available in your current IDE/runtime and selects **0 to 3 high-confidence domain/workflow skills** (excluding `prompt-optimizer` itself and meta-routers). When `0` skills clearly match, the `🧩 Matched Skills` line is omitted completely.
+- **Portable `<active_skills>` Contract Block:** Embeds `<active_skills>` inside the collapsible `<details>` prompt so even copy-pasted contracts tell the target session which `SKILL.md` files to read before editing code.
+- **One-Reply Control (Zero Extra Turn):**
+
+| Your Reply | What Happens |
+|---|---|
+| `"yes"` / `"evet"` / `"onaylıyorum"` | Reads the `SKILL.md` of every matched skill and executes the approved plan immediately. |
+| `"yes without e2e-testing"` / `"evet ama tdd hariç"` | Skips the excluded skill, loads the remaining matched skills, and executes without re-opening the gate. |
+| Copy & paste `<details>` into another session | Gear 0 bypasses wrapping a second card and follows `<active_skills>` directly. |
+
+### Multilingual & Turkish Natural-Language Gate (`hooks/prompt-optimizer-gate.mjs`)
+
+- **Unicode Word Boundaries (`u` flag):** Uses `(?<![\p{L}\p{N}])...(?![\p{L}\p{N}])` instead of ASCII `\b`, preventing read-only Turkish nouns like `"yazılım"` (software) or `"kurşun"` (lead) from false-matching verb stems `"yaz"` (write) or `"kur"` (install).
+- **Turkish Verb Inflections & Vowel-Stem `y`-Buffers:** Recognizes polite, optative, interrogative, and softened imperatives including `"bu hatayı düzeltir misin"`, `"M25 modülünü ekleyin"`, `"bu dosyayı güncelleyiniz"`, `"yeni modülü ekleyelim"`, `"klasörü taşıyın"`, and `"sisteme entegre edin"`.
+- **Smart Follow-Up Bypass & Unit Tests:** Short-tail approvals (`<= 80` chars, e.g. `"Evet, güncelle"`, `"evet ama X hariç uygula"`) and git-only follow-ups (`<= 60` chars, e.g. `"Commit ve push et"`) bypass the gate cleanly. Verify anytime with:
+  ```bash
+  node --test hooks/prompt-optimizer-gate.test.mjs
+  ```
+
 ### Built-In Model Intelligence
 
 - **Claude Opus 5.5:** Calibrates `medium`/`high` effort expectations, injects broad multi-module context discovery, prevents premature `end_turn` stops on long runs, and replaces generic UI defaults with concrete anti-slop constraints.
@@ -110,6 +134,30 @@ Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that d
 | **Vites 1: `/small` Cerrahi Hızlı Mod ⚡** | Mesajın başına `/small` yazıldığında | Soru sormaz. Hedef dosyayı okur, **çevredeki kodlara dokunmama kilidi** koyar ve **3 satırlık hızlı onay kartı** sunar. |
 | **Vites 2: Tam Kontrat Modu 🎯** | Yeni özellik, mimari, refactor, RAG/içerik üretimi veya `/promptla`, `/prompt-optimize`, `$prompt-optimizer` | Projeyi sessizce inceler + **uygun 0–3 yüklü yeteneği eşleştirir** → niyet netse **0 soru** (kritik belirsizlik varsa **en fazla 1 jargonsuz soru**) sorar → modele özel `<details>` kontrat kartını sunar ve tek adımda onayınızı bekler. |
 
+### Dinamik Yetenek Eşleştirme ve Tek Kartta Onay (`v1.2.0`)
+
+`prompt-optimizer` Türkçe isteğinizi kontrata çevirirken konuyu zaten anlar; ancak konuyu anlamak ile **o konuya ait `SKILL.md` dosyasını diskten açıp kurallarını okumak** aynı şey değildir. Özellikle `Claude Code` ve `Codex`, o turda `prompt-optimizer` yeteneğini okuduktan sonra ilgili alan yeteneklerini (`nestjs-patterns`, `test-driven-development`, `cinecode`, `yt-script` vb.) açmayı atlayabilir veya `<details>` kontratını başka bir pencereye yapıştırdığınızda karşıdaki oturum hangi yetenekleri yükleyeceğini bilemeyebilir. Ayrı bir mesajda *"Şu skilleri kullanayım mı?"* diye sormak ise sizi **iki kez onay vermeye** zorlar.
+
+`v1.2.0` bu iki sorunu **tek onay kartı içinde** sıfır ekstra beklemeyle çözer:
+- **Dinamik Ortam Taraması (Sabit İsim Yok):** Açık kaynak ve taşınabilir kalması için içine sabit yetenek adları gömülmez; o an çalıştığınız IDE'de yüklü yetenekleri tarar ve konuya doğrudan uyan **en fazla 1-3 yeteneği** seçer (`0` eşleşme varsa satırı hiç göstermez, gürültü yapmaz).
+- **Taşınabilir `<active_skills>` Kontrat Bloğu:** Seçilen yetenekleri `<details>` içindeki XML kontratına da yazar; böylece kontratı kopyalayıp başka bir `Claude` veya `Codex` penceresine yapıştırdığınızda bile karşıdaki ajan işe başlamadan önce o `SKILL.md` dosyalarını okur.
+- **Tek Yanıtla Tam Kontrol:**
+
+| Yanıtınız | Ajanın Davranışı |
+|---|---|
+| `"evet"` / `"onaylıyorum"` / `"uygula"` | Eşleşen yeteneklerin `SKILL.md` kurallarını okuyarak planı doğrudan uygular. |
+| `"evet ama tdd hariç"` / `"onaylıyorum, X olmadan devam et"` | Hariç tuttuğunuz yeteneği atlar, kalan yeteneklerle ikinci kez kapı açmadan doğrudan uygular. |
+| `<details>` kontratını başka pencereye yapıştırma | Vites 0 devreye girer; ikinci bir kart açmadan `<active_skills>` kurallarıyla uygular. |
+
+### Türkçe Doğal Dil ve Çekim Eki Zekası (`hooks/prompt-optimizer-gate.mjs`)
+
+- **Unicode Kelime Sınırları (`u` bayrağı):** JavaScript `\b` ifadesi Türkçe karakterleri (`ı, ş, ğ, ü, ö, ç`) kelime dışı saydığı için eski sürümlerde `"yazılım lisansı nedir"` cümlesinde `"yaz"`, `"kurşun"` kelimesinde `"kur"` yanlış tetikleniyordu. Unicode sınırları (`(?<![\p{L}\p{N}])`) ile salt okuma soruları tamamen koruma altına alındı.
+- **Ünlüyle Biten Fiillerde `y` Kaynaştırma ve Ünsüz Yumuşaması:** `"bu hatayı düzeltir misin"`, `"M25 modülünü ekleyin"`, `"bu dosyayı güncelleyiniz"`, `"yeni modülü ekleyelim"`, `"klasörü taşıyın"` ve `"sisteme entegre edin"` gibi gerçek Türkçe istek kiplerinin tamamı yakalanır.
+- **Akıllı Devam Geçişi ve Birim Testleri:** `"Evet, güncelle"`, `"evet ama X hariç uygula"` (`<= 80` karakter) ve `"Commit ve push et"` (`<= 60` karakter) gibi onay/devam mesajları ikinci kez onay kartı açmaz. Doğrulamak için:
+  ```bash
+  node --test hooks/prompt-optimizer-gate.test.mjs
+  ```
+
 ### Hızlı Kurulum ve Çoklu-IDE Senkronizasyonu (TR)
 
 Tek komutla tüm yerel IDE dizinlerine (`~/.claude`, `~/.agents`, `~/.codex`, `~/.gemini/config`, `~/.mlx-serve`) kurmak, `/promptla` + `/small` komutlarını ve Claude Code `UserPromptSubmit` kancasını bağlamak ve çakışan kural denetimi yapmak için:
@@ -133,7 +181,7 @@ chmod +x install.sh
 
 ## Usage Preview / Örnek Görünüm
 
-### Full Mode / Tam Mod
+### Full Mode (EN)
 > **Input:** *"Add automatic priority routing to incoming support tickets based on urgency and module."*
 >
 > **Output:**
@@ -143,9 +191,23 @@ chmod +x install.sh
 > - Add structured enum classification (`low | normal | urgent` + module taxonomy) in `src/tickets/router.service.ts`
 > - Validate schema adherence and run unit tests before reporting completion
 >
-> `<details><summary>🔧 Optimized Execution Contract (Click to inspect or copy)</summary> ... </details>`
+> `<details><summary>🔧 Optimized Execution Contract (Click to inspect or copy)</summary> ... <active_skills> ... </details>`
 >
 > **Proceed with this plan?** *(Say "yes" to execute with matched skills, or "yes without [skill]" to skip one.)*
+
+### Tam Mod (TR)
+> **Girdi:** *"Gelen destek taleplerini aciliyet ve modüle göre otomatik sınıflandıran servisi ekleyin."*
+>
+> **Çıktı:**
+> **🎯 Tespit Edilen Model:** Claude Sonnet 5.5
+> **🧩 Eşleşen Yetenekler:** `nestjs-patterns` *(servis ve DTO doğrulaması)*, `test-driven-development` *(birim test güvencesi)*
+> **📌 Uygulama Planı (Özet):**
+> - `src/tickets/router.service.ts` içinde `low | normal | urgent` ve modül sınıflandırma şeması oluşturulacak
+> - Şema doğrulaması ve birim testleri çalıştırılarak sonuç raporlanacak
+>
+> `<details><summary>🔧 Optimize Edilmiş Görev Kontratı (İncelemek veya kopyalamak için tıklayın)</summary> ... <active_skills> ... </details>`
+>
+> **Bu planla devam edelim mi?** *(Eşleşen yeteneklerle uygulamak için "evet", birini atlamak için "evet ama [skill] hariç" diyebilirsiniz.)*
 
 ### Surgical Mode / `/small` Hızlı Mod ⚡
 > **Input:** `/small üst menüdeki giriş butonunun rengini #0F172A yap`
