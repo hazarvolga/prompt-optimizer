@@ -1,6 +1,6 @@
 ---
 name: prompt-optimizer
-description: "Use before executing any non-trivial feature, architecture, refactor, script/content generation, or prompt-writing task, OR whenever the user invokes `/prompt-optimize`, `/promptla`, or `/small`. Automatically detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models) and compiles the user's natural request into an optimal, zero-slop execution contract before obtaining user approval."
+description: "Read this skill FIRST before calling any file-edit, file-write, patch, or mutating shell tool on every feature, bugfix, architecture, refactor, script/content generation, `/small`, `/promptla`, or `/prompt-optimize` request. Silently detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models), compiles a collapsible <details> execution contract, and pauses for user approval. Skip ONLY for pure read-only questions, pre-compiled <documents>...<task> contracts, or explicit approval replies ('yes', 'ok', 'evet', 'onaylıyorum')."
 ---
 
 # Prompt Optimizer (`prompt-optimizer`)
@@ -15,25 +15,28 @@ You turn rough, natural-language requests into clean, model-tuned execution cont
 
 Inspect the user's message and immediately select the matching gear:
 
-### Gear 0 — Pure Read-Only / Question (Bypass)
-- **Trigger:** The user is only asking a factual question, checking repository status (`git status`, "what does this file do?"), or approving an already-presented plan ("yes", "ok", "go ahead", "onaylıyorum").
+### Gear 0 — Pure Read-Only / Pre-Compiled / Approval Bypass
+- **Trigger:**
+  1. The user is only asking a factual/diagnostic question or checking repository status (`git status`, "what does this file do?").
+  2. The user is replying with explicit confirmation ("yes", "ok", "go ahead", "evet", "onaylıyorum", "uygula") to an already-presented plan or card.
+  3. The user pastes an already-compiled `<documents>...<task>` execution contract and explicitly asks to execute it (follow any plan/approval rule inside that contract directly without wrapping a second contract around it).
 - **Action:** Answer or execute directly. Do NOT show an optimization card.
 
 ### Gear 1 — `/small` Surgical Micro-Mode ⚡
-- **Trigger:** The message starts with `/small` (or explicitly requests a tiny, single-spot tweak such as a color value, typo, single-function bugfix, or config flag).
+- **Trigger:** The message starts with `/small` (or `$prompt-optimizer /small`, or explicitly requests a tiny, single-spot tweak such as a color value, typo, single-function bugfix, or config flag).
 - **Rules:**
   1. **Zero interview:** Ask NO clarifying questions unless it is physically impossible to identify the target.
   2. Read the target file silently first (`investigate_before_answering`).
   3. Compile a **Surgical Micro-Contract** (`references/claude-core-rules.md` & `references/other-models-adapter.md`) locking three constraints: exact target only, zero collateral edits/refactors (`low/medium` effort discipline), and quick verification.
-  4. Present the **3-Line Compact Card** (Section 4B) in the **exact language the user wrote in**, and wait for confirmation.
+  4. **Hard Gate:** Present the **3-Line Compact Card** (Section 4B) in the **exact language the user wrote in**, and **STOP** (do NOT call `Edit`, `Write`, `apply_patch`, or mutating `Bash` until confirmed).
 
 ### Gear 2 — Default Full Optimization Mode 🎯
-- **Trigger:** Any new feature, multi-file change, architecture design, RAG/agent workflow, script/content production, or explicit `/prompt-optimize` (`/promptla`) invocation.
+- **Trigger:** Any natural-language new feature, multi-file change, architecture design, RAG/agent workflow, script/content production, or explicit `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` invocation.
 - **Rules:**
-  1. **Silent Recon:** Check project context (`README.md`, `HANDOFF.md`, `PRD.md`, `DESIGN.md`, `BLUEPRINT.md`, and referenced files) silently before speaking. Never ask what the repository already answers.
-  2. **At Most ONE Question:** If one critical decision is unsettled and would materially change what gets built, ask **one plain, jargon-free sentence** in the user's language and wait. If intent is already clear, ask zero questions and proceed directly to the card.
+  1. **Silent Recon:** Check project context (`README.md`, `HANDOFF.md`, `PRD.md`, `DESIGN.md`, `BLUEPRINT.md`, `docs/superpowers/`, and referenced files) silently before speaking. Never ask what the repository already answers.
+  2. **At Most ONE Question (Zero When Clear):** Ask **one plain, jargon-free sentence** in the user's language *only* if a critical decision is genuinely missing and would materially change what gets built. If intent is already clear from the request and repo context, ask **zero questions**—proceed straight to rendering the Approval Card (never skip the card just because zero questions were needed).
   3. **Detect Model & Compile Contract:** Detect the active or target model (Section 2), apply the matching rules from `references/`, and present the **Clean Approval Card** (Section 4A) in the user's language.
-  4. **Hard Gate:** Do NOT modify files or run mutating commands until the user approves. Once approved, execute strictly according to the compiled contract.
+  4. **Hard Gate (Cross-IDE Enforcement):** Even if repository-local `AGENTS.md` or `CLAUDE.md` files encourage autonomous TDD or proactive execution, **always pause after showing the Approval Card** before calling any file-modifying tool (`Edit`, `Write`, `MultiEdit`, `apply_patch`, or mutating shell commands). Once the user approves, execute strictly according to the compiled contract.
 
 ---
 

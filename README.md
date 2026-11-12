@@ -18,10 +18,10 @@
 
 **Write what you want in plain everyday language. Let the agent compile the engineering-grade prompt contract.**
 
-Before touching a single file, `prompt-optimizer` silently detects your active model (**Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Google Gemini, OpenAI GPT/Codex, or Local Open-Weight Models**), inspects your repository context, and compiles your natural request into a surgical, zero-slop execution contract—tucked neatly inside a collapsible `<details>` block so your workspace stays clean.
+Before touching a single file, `prompt-optimizer` silently detects your active model (**Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Google Gemini, OpenAI GPT/Codex, or Local Open-Weight Models**), inspects your repository context, and compiles your natural request into a surgical, zero-slop execution contract tucked inside a collapsible `<details>` block so your workspace stays clean.
 
 - **100% Self-Contained:** Zero external path dependencies, zero runtime packages.
-- **Cross-IDE & Cross-Runtime:** Works out of the box in **Claude Code, Claude Desktop, Antigravity, Cursor, Codex, OpenCode, and MLX / Ollama / LM Studio**.
+- **Cross-IDE & Cross-Runtime:** Works across **Claude Code, Claude Desktop, Antigravity, Cursor, Codex, OpenCode, and MLX / Ollama / LM Studio**.
 
 ### Why This Exists
 
@@ -33,9 +33,9 @@ Modern frontier models fail in two predictable ways when given raw human prompts
 
 | Gear | Trigger | Behavior |
 |---|---|---|
-| **Gear 0 — Bypass** | Read-only questions (`git status`, *"how does auth work?"*) | Zero friction. Answers immediately without showing a card. |
-| **Gear 1 — `/small` Surgical Mode ⚡** | Start message with `/small` | Zero interview. Reads target file, locks **zero-collateral-edit** rules, and presents a **3-line compact approval card**. |
-| **Gear 2 — Full Contract Mode 🎯** | Features, refactors, RAG, architecture, or `/prompt-optimize` | Silent repo recon → at most **1 jargon-free question** (if needed) → compiles XML/Markdown contract tuned to the active model → clean approval gate. |
+| **Gear 0: Bypass** | Read-only questions (`git status`, *"how does auth work?"*), approvals (`ok`, `yes`), or pre-compiled `<documents>...<task>` contracts | Zero friction. Answers or executes immediately without wrapping a second card. |
+| **Gear 1: `/small` Surgical Mode ⚡** | Start message with `/small` | Zero interview. Reads target file, locks **zero-collateral-edit** rules, and presents a **3-line compact approval card**. |
+| **Gear 2: Full Contract Mode 🎯** | Features, refactors, RAG, architecture, `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` | Silent repo recon → **0 questions** if clear (at most **1 plain question** if critically ambiguous) → compiles XML/Markdown contract → clean approval gate. |
 
 ### Built-In Model Intelligence
 
@@ -47,29 +47,44 @@ Modern frontier models fail in two predictable ways when given raw human prompts
 
 ### Quick Installation (EN)
 
-#### Option A: CLI / IDE Agent Skill (`~/.claude`, `~/.agents`, `~/.gemini`, `~/.codex`)
+#### Option A: One-Command Multi-IDE Installer (Recommended)
+Installs the skill across `~/.claude`, `~/.agents`, `~/.codex`, `~/.gemini/config`, and `~/.mlx-serve`, installs slash commands (`/prompt-optimize`, `/promptla`, `/small`), installs the Claude Code `UserPromptSubmit` hook, and audits global rules for conflicting override directives:
 ```bash
 git clone https://github.com/hazarvolga/prompt-optimizer.git
 cd prompt-optimizer
-
-# Claude Code & Claude Desktop
-mkdir -p ~/.claude/skills ~/.claude/commands
-cp -R skills/prompt-optimizer ~/.claude/skills/
-cp commands/*.md ~/.claude/commands/
-
-# Cross-runtime (Codex, OpenCode, Gemini CLI, Antigravity)
-mkdir -p ~/.agents/skills
-cp -R skills/prompt-optimizer ~/.agents/skills/
+chmod +x install.sh
+./install.sh
 ```
 
-#### Option B: Claude Desktop / Web GUI Upload
-Download `prompt-optimizer.zip` from [Releases](https://github.com/hazarvolga/prompt-optimizer/releases) (or zip `skills/prompt-optimizer`) and upload it under **Settings → Capabilities → Skills**.
+#### Option B: Claude Desktop (`Chat` / `Cowork` Tab) GUI Upload
+Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that does not read `~/.claude/skills/` on your host disk (whereas the local `Code` tab does). To enable `prompt-optimizer` inside `Chat` / `Cowork`, download `prompt-optimizer.zip` from [Releases](https://github.com/hazarvolga/prompt-optimizer/releases) and upload it under **Settings → Capabilities → Skills**.
 
-#### Optional: Enable Automatically Across All Projects
-Add this rule to your global `~/.claude/CLAUDE.md` or `AGENTS.md`:
-```markdown
-- Before executing any file/code modification, new feature, or content generation task, invoke `prompt-optimizer`: silently detect the active model, compile the request into a collapsible `<details>` execution contract, and ask for confirmation. If my message starts with `/small`, use Gear 1 (3-line surgical mode); for read-only questions, answer directly.
-```
+#### Automatic Pre-Execution Gate Across All IDEs
+1. **Global `CLAUDE.md` / `AGENTS.md` Rule:** Always specify the explicit `SKILL.md` path and hard-stop gate:
+   ```markdown
+   - **Pre-Execution Gate (`prompt-optimizer`):** Before calling any file-edit, file-write, patch, or mutating shell tool on any feature, bugfix, refactor, or content generation request, FIRST read `~/.agents/skills/prompt-optimizer/SKILL.md` (or `~/.claude/skills/prompt-optimizer/SKILL.md`), compile the collapsible `<details>` execution contract tuned to your active model, and STOP for my approval (`yes / ok / onaylıyorum`). Apply Gear 1 (3-line card, zero questions) for `/small`, and Gear 0 (direct reply) for read-only questions. This gate overrides any proactive/autonomous execution rules in project-level `AGENTS.md` or `rules/`.
+   ```
+2. **Claude Code `UserPromptSubmit` Hook (`~/.claude/settings.json`):** Ensures reliable card rendering even in long sessions or repositories with heavy project `CLAUDE.md` files:
+   ```json
+   {
+     "hooks": {
+       "UserPromptSubmit": [
+         {
+           "hooks": [
+             {
+               "type": "command",
+               "command": "node ~/.claude/hooks/prompt-optimizer-gate.mjs"
+             }
+           ]
+         }
+       ]
+     }
+   }
+   ```
+3. **Why Codex or Claude May Skip the Card (Troubleshooting):**
+   - **Conflicting Global Directives:** Legacy rules in `~/.codex/AGENTS.md` or `~/.claude/rules/agents.md` such as *"Use agents proactively without user prompt"* or *"Focus on speed / Give complete working solutions"* cause GPT/Codex and Claude to bypass soft approval rules. Run `./install.sh` to detect them automatically.
+   - **Explicit Invocation Syntax:** Claude Code uses `/promptla`, `/prompt-optimize`, and `/small`; OpenAI Codex uses `$prompt-optimizer` (Codex does not read `~/.claude/commands/`).
+   - **Zero Questions vs. Skipping the Card:** When your intent is already clear from repo context, `prompt-optimizer` intentionally asks **0 questions**—but it must still present the `<details>` Approval Card before editing files. Always open a **New Session / Thread** after updating global rules.
 
 ---
 
@@ -82,42 +97,32 @@ Add this rule to your global `~/.claude/CLAUDE.md` or `AGENTS.md`:
 - **%100 Bağımsız ve Taşınabilir:** Hiçbir dış klasöre veya ek kütüphaneye bağımlı değildir.
 - **Tüm IDE ve Ajanlarla Uyumlu:** **Claude Code, Claude Desktop, Antigravity, Cursor, Codex, OpenCode ve MLX / Ollama / LM Studio** ortamlarında doğrudan çalışır.
 
-### Neden Geliştirildi?
-
-Modern yapay zeka modelleri ham kullanıcı cümleleriyle çalıştığında iki temel sorun üretir:
-1. **Karmaşık görevlerde eksik bağlam:** Okunmamış dosyalar hakkında tahmin yürütme (halüsinasyon), istenmeyen ek dosyalar/refactor üretme (*overengineering*) veya işi yarım bırakma.
-2. **Küçük görevlerde aşırı yükleme:** Basit bir renk/satır değişikliğinde gereksiz uzun düşünme süresi ve çevredeki çalışan kodları bozma.
-
-`prompt-optimizer` bu iki sorunu **3 Vitesli Otomatik Akış** ile çözer:
+### 3 Vitesli Otomatik Akış
 
 | Vites | Tetikleyici | Davranış |
 |---|---|---|
-| **Vites 0 — Doğrudan Yanıt** | Salt okuma ve bilgi soruları (`git status`, *"bu dosya ne yapıyor?"*) | Sizi hiç bekletmez; onay kartı açmadan doğrudan yanıtlar. |
-| **Vites 1 — `/small` Cerrahi Hızlı Mod ⚡** | Mesajın başına `/small` yazıldığında | Soru sormaz. Hedef dosyayı okur, **çevredeki kodlara dokunmama kilidi** koyar ve **3 satırlık hızlı onay kartı** sunar. |
-| **Vites 2 — Tam Kontrat Modu 🎯** | Yeni özellik, mimari, refactor, RAG/içerik üretimi veya `/prompt-optimize` | Projeyi sessizce inceler → gerekirse jargonsuz **en fazla 1 soru** sorar → aktif modele özel XML/Markdown kontratını derler → onayınızla uygular. |
+| **Vites 0: Doğrudan Geçiş** | Salt okuma soruları (`git status`, *"bu dosya ne yapıyor?"*), onay yanıtları (`ok`, `evet`, `onaylıyorum`) veya zaten derlenmiş `<documents>...<task>` kontratları | Sizi bekletmez; ikinci kez kart açmadan doğrudan yanıtlar veya uygular. |
+| **Vites 1: `/small` Cerrahi Hızlı Mod ⚡** | Mesajın başına `/small` yazıldığında | Soru sormaz. Hedef dosyayı okur, **çevredeki kodlara dokunmama kilidi** koyar ve **3 satırlık hızlı onay kartı** sunar. |
+| **Vites 2: Tam Kontrat Modu 🎯** | Yeni özellik, mimari, refactor, RAG/içerik üretimi veya `/promptla`, `/prompt-optimize`, `$prompt-optimizer` | Projeyi sessizce inceler → niyet netse **0 soru** (kritik belirsizlik varsa **en fazla 1 jargonsuz soru**) sorar → modele özel `<details>` kontrat kartını sunar ve onayınızı bekler. |
 
-### Hızlı Kurulum (TR)
+### Hızlı Kurulum ve Çoklu-IDE Senkronizasyonu (TR)
+
+Tek komutla tüm yerel IDE dizinlerine (`~/.claude`, `~/.agents`, `~/.codex`, `~/.gemini/config`, `~/.mlx-serve`) kurmak, `/promptla` + `/small` komutlarını ve Claude Code `UserPromptSubmit` kancasını bağlamak ve çakışan kural denetimi yapmak için:
 
 ```bash
 git clone https://github.com/hazarvolga/prompt-optimizer.git
 cd prompt-optimizer
-
-# Claude Code & Claude Desktop kurulumu
-mkdir -p ~/.claude/skills ~/.claude/commands
-cp -R skills/prompt-optimizer ~/.claude/skills/
-cp commands/*.md ~/.claude/commands/
-
-# Diğer tüm ajanlar (Codex, OpenCode, Gemini, Antigravity)
-mkdir -p ~/.agents/skills
-cp -R skills/prompt-optimizer ~/.agents/skills/
+chmod +x install.sh
+./install.sh
 ```
 
-**Görsel Arayüz (GUI) ile Yükleme:** [Releases](https://github.com/hazarvolga/prompt-optimizer/releases) sayfasından `prompt-optimizer.zip` dosyasını indirip Claude Desktop / Web içinde **Settings → Capabilities → Skills** bölümünden tek tıkla yükleyebilirsiniz.
+**Claude Desktop (`Chat` / `Cowork` Sekmesi) İçin Görsel Yükleme:** `Claude Desktop` içindeki `Chat` ve `Cowork` sekmeleri izole sanal makinede çalıştığı için yerel `~/.claude/skills/` klasörünü okumaz (yerel `Code` sekmesi ise okur). `Chat / Cowork` içinde de aktif etmek için [Releases](https://github.com/hazarvolga/prompt-optimizer/releases) sayfasından `prompt-optimizer.zip` dosyasını indirip **Settings → Capabilities → Skills** ekranından yükleyebilirsiniz.
 
-**Tüm Projelerde Otomatik Çalıştırmak İçin (Opsiyonel):** Global `~/.claude/CLAUDE.md` veya `AGENTS.md` dosyanıza şu satırı ekleyin:
-```markdown
-- Dosya/kod değişikliği, yeni özellik veya içerik üretimi gerektiren görevlerde işleme başlamadan önce `prompt-optimizer` yeteneğini çalıştır: aktif modeli sessizce tespit et, isteğimi açılır `<details>` kutusunda optimize kontrata dönüştür ve onayımı al. Mesajım `/small` ile başlıyorsa 3 satırlık Cerrahi Hızlı Mod uygula; salt okuma sorularında doğrudan yanıtla.
-```
+### Codex ve Claude Neden Kart Göstermeden Koda Dalabilir? (Sorun Giderme)
+
+1. **Çelişkili Global Kurallar (`AGENTS.md` / `rules/agents.md`):** Global `AGENTS.md` veya `rules/agents.md` içinde eski kurulumlardan kalan *"No user prompt needed"*, *"Use agents proactively without user prompt"* veya *"Focus on speed / Give complete working solutions"* ifadeleri varsa özellikle GPT/Codex modelleri onay kapısını atlayıp doğrudan kod yazmaya geçer. `./install.sh` betiği bu çakışmaları otomatik tespit edip uyarır.
+2. **Komut Sözdizimi Farkı:** Claude Code `/promptla` ve `/small` komutlarını (`~/.claude/commands/`) okur; Codex ise slash komut klasörünü okumaz, doğrudan yetenek adı ile (`$prompt-optimizer`) veya global `AGENTS.md` kuralıyla tetiklenir.
+3. **"Soru Sormama" ile "Kart Göstermeme" Farkı:** İsteğiniz ve proje dosyaları yeterince net olduğunda `prompt-optimizer` tasarım gereği **0 soru** sorar; ancak soru sormasa bile kod değiştirmeden önce **`<details>` Görev Kontratı Kartını** gösterip onay istemesi zorunludur. Kural güncellemelerinden sonra her zaman **Yeni Oturum (`New Session / New Thread`)** açın.
 
 ---
 
@@ -148,5 +153,5 @@ cp -R skills/prompt-optimizer ~/.agents/skills/
 
 ## Author & License
 
-Created by **[Hazar Volga Ekiz](https://hazarvolga.com.tr)** — informed by Anthropic's official Prompt Engineering & Agentic Systems guidelines.
+Created by **[Hazar Volga Ekiz](https://hazarvolga.com.tr)** · Informed by official frontier Prompt Engineering & Agentic Systems guidelines.
 Released under the [MIT License](./LICENSE).
