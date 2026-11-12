@@ -1,6 +1,6 @@
 ---
 name: prompt-optimizer
-description: "Read this skill FIRST before calling any file-edit, file-write, patch, or mutating shell tool on every feature, bugfix, architecture, refactor, script/content generation, `/small`, `/promptla`, or `/prompt-optimize` request. Silently detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models), compiles a collapsible <details> execution contract, and pauses for user approval. Skip ONLY for pure read-only questions, pre-compiled <documents>...<task> contracts, or explicit approval replies ('yes', 'ok', 'evet', 'onaylıyorum')."
+description: "Read this skill before the first file-edit, file-write, patch, or mutating shell tool on a NEW multi-file feature, architecture change, refactor, or script/content generation request, and whenever the user invokes `/small`, `/promptla`, or `/prompt-optimize`. Silently detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models), compiles a collapsible <details> execution contract, and pauses for user approval. Skip for read-only questions, single-spot fixes the user already described exactly, continuations of work approved earlier in the session (commit, push, next step), pre-compiled <documents>...<task> contracts, and approval replies ('yes', 'ok', 'evet', 'onaylıyorum'), including approvals with a short tail such as 'Evet, güncelle'."
 ---
 
 # Prompt Optimizer (`prompt-optimizer`)
@@ -19,6 +19,8 @@ Inspect the user's message and immediately select the matching gear:
 - **Trigger:**
   1. The user is only asking a factual/diagnostic question or checking repository status (`git status`, "what does this file do?").
   2. The user is replying with explicit confirmation ("yes", "ok", "go ahead", "evet", "onaylıyorum", "uygula") to an already-presented plan or card.
+     This includes approvals with a short tail ("Evet, güncelle", "Onaylıyorum, uygula") and git follow-ups on approved work ("Commit ve push et").
+  4. The request continues work already approved in this session (the next step of an approved plan); a new card would only repeat the approved one.
   3. The user pastes an already-compiled `<documents>...<task>` execution contract and explicitly asks to execute it (follow any plan/approval rule inside that contract directly without wrapping a second contract around it).
 - **Action:** Answer or execute directly. Do NOT show an optimization card.
 
@@ -31,7 +33,7 @@ Inspect the user's message and immediately select the matching gear:
   4. **Hard Gate:** Present the **3-Line Compact Card** (Section 4B) in the **exact language the user wrote in**, and **STOP** (do NOT call `Edit`, `Write`, `apply_patch`, or mutating `Bash` until confirmed).
 
 ### Gear 2 — Default Full Optimization Mode 🎯
-- **Trigger:** Any natural-language new feature, multi-file change, architecture design, RAG/agent workflow, script/content production, or explicit `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` invocation.
+- **Trigger:** A NEW natural-language feature, multi-file change, architecture design, RAG/agent workflow, script/content production, or explicit `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` invocation. A single-spot change that the user described exactly goes through Gear 1 instead.
 - **Rules:**
   1. **Silent Recon:** Check project context (`README.md`, `HANDOFF.md`, `PRD.md`, `DESIGN.md`, `BLUEPRINT.md`, `docs/superpowers/`, and referenced files) silently before speaking. Never ask what the repository already answers.
   2. **At Most ONE Question (Zero When Clear):** Ask **one plain, jargon-free sentence** in the user's language *only* if a critical decision is genuinely missing and would materially change what gets built. If intent is already clear from the request and repo context, ask **zero questions**—proceed straight to rendering the Approval Card (never skip the card just because zero questions were needed).

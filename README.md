@@ -9,12 +9,15 @@
   <a href="#english-documentation">🇬🇧 English Documentation</a> •
   <a href="#türkçe-dokümantasyon">🇹🇷 Türkçe Dokümantasyon</a> •
   <a href="https://github.com/hazarvolga/prompt-optimizer/releases">📦 Download Skill (.zip)</a> •
+  <a href="CHANGELOG.md">📝 Changelog / Değişiklikler</a> •
   <a href="https://hazarvolga.com.tr">🌐 hazarvolga.com.tr</a>
 </p>
 
 ---
 
 # 🇬🇧 English Documentation
+
+> **What's new in 1.1.0:** approvals with a short tail ("Evet, güncelle") and git follow-ups ("Commit ve push et") no longer re-open the approval gate; Turkish words like "yazılım" no longer trigger it, and Turkish verb forms like "düzeltir misin" now do; the skill loads only for new multi-file work; API rules were checked against the Claude API reference. Details and reasons: [CHANGELOG.md](CHANGELOG.md).
 
 **Write what you want in plain everyday language. Let the agent compile the engineering-grade prompt contract.**
 
@@ -62,7 +65,7 @@ Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that d
 #### Automatic Pre-Execution Gate Across All IDEs
 1. **Global `CLAUDE.md` / `AGENTS.md` Rule:** Always specify the explicit `SKILL.md` path and hard-stop gate:
    ```markdown
-   - **Pre-Execution Gate (`prompt-optimizer`):** Before calling any file-edit, file-write, patch, or mutating shell tool on any feature, bugfix, refactor, or content generation request, FIRST read `~/.agents/skills/prompt-optimizer/SKILL.md` (or `~/.claude/skills/prompt-optimizer/SKILL.md`), compile the collapsible `<details>` execution contract tuned to your active model, and STOP for my approval (`yes / ok / onaylıyorum`). Apply Gear 1 (3-line card, zero questions) for `/small`, and Gear 0 (direct reply) for read-only questions. This gate overrides any proactive/autonomous execution rules in project-level `AGENTS.md` or `rules/`.
+   - **Pre-Execution Gate (`prompt-optimizer`):** Before calling any file-edit, file-write, patch, or mutating shell tool on a NEW multi-file feature, refactor, or content generation request, FIRST read `~/.agents/skills/prompt-optimizer/SKILL.md` (or `~/.claude/skills/prompt-optimizer/SKILL.md`), compile the collapsible `<details>` execution contract tuned to your active model, and STOP for my approval (`yes / ok / onaylıyorum`). Apply Gear 1 (3-line card, zero questions) for `/small`, and Gear 0 (direct reply) for read-only questions, approvals (also with a short tail such as "Evet, güncelle") and git follow-ups on approved work. This gate overrides any proactive/autonomous execution rules in project-level `AGENTS.md` or `rules/`.
    ```
 2. **Claude Code `UserPromptSubmit` Hook (`~/.claude/settings.json`):** Ensures reliable card rendering even in long sessions or repositories with heavy project `CLAUDE.md` files:
    ```json
@@ -89,6 +92,8 @@ Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that d
 ---
 
 # 🇹🇷 Türkçe Dokümantasyon
+
+> **1.1.0 ile gelenler:** Kısa ek içeren onaylar ("Evet, güncelle") ve git devam mesajları ("Commit ve push et") onay kapısını artık yeniden açmıyor; "yazılım" gibi kelimeler kapıyı tetiklemiyor, "düzeltir misin" gibi fiil çekimleri ise artık tetikliyor; skill yalnız yeni ve çok dosyalı işlerde yükleniyor; API kuralları resmi belgeyle doğrulandı. Ayrıntılar ve nedenleri: [CHANGELOG.md](CHANGELOG.md).
 
 **Aklınızdakini günlük doğal dille yazın; ajanınız dosyalarınıza dokunmadan önce isteğinizi o modele özel kusursuz bir mühendislik kontratına dönüştürsün.**
 
