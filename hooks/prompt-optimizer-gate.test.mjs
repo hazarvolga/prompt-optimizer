@@ -6,8 +6,20 @@ import { classifyPrompt } from './prompt-optimizer-gate.mjs';
 
 const HOOK = fileURLToPath(new URL('./prompt-optimizer-gate.mjs', import.meta.url));
 
-test('approval replies bypass the gate, also with a short tail (observed failure in 1.0.0)', () => {
-  for (const prompt of ['evet', 'Onaylıyorum', 'ok', 'Evet, güncelle', 'Onaylıyorum, uygula', 'evet düzelt ve push et', 'yes, go ahead']) {
+test('approval replies bypass the gate, also with a short tail or skill filter (observed failure in 1.0.0)', () => {
+  for (const prompt of [
+    'evet',
+    'Onaylıyorum',
+    'ok',
+    'Evet, güncelle',
+    'Onaylıyorum, uygula',
+    'evet düzelt ve push et',
+    'evet, önerdiğin skilleri de kullan',
+    'evet ama tdd hariç uygula',
+    'onaylıyorum, cinecode olmadan devam et',
+    'yes, go ahead',
+    'yes without e2e-testing',
+  ]) {
     assert.equal(classifyPrompt(prompt), 'bypass', prompt);
   }
 });
@@ -24,8 +36,19 @@ test('Turkish words that only contain a verb stem are not change requests (obser
   }
 });
 
-test('real change requests still trigger the gate, with Turkish verb suffixes', () => {
-  for (const prompt of ['M25 modülünü ekle', 'giriş sayfasını yeniden yaz', 'bu hatayı düzeltir misin', 'Add a login page', 'install the skill']) {
+test('real change requests still trigger the gate, with Turkish verb suffixes and vowel-stem y-buffers', () => {
+  for (const prompt of [
+    'M25 modülünü ekle',
+    'M25 modülünü ekleyin',
+    'bu dosyayı güncelleyiniz',
+    'yeni modülü ekleyelim',
+    'klasörü taşıyın',
+    'sisteme entegre edin',
+    'giriş sayfasını yeniden yaz',
+    'bu hatayı düzeltir misin',
+    'Add a login page',
+    'install the skill',
+  ]) {
     assert.equal(classifyPrompt(prompt), 'gear2-auto', prompt);
   }
 });

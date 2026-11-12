@@ -32,10 +32,11 @@ const GIT_ONLY =
  * Each stem is followed either by the end of the word or by a Turkish verb suffix.
  */
 const MUTATION_STEMS = [
-  'ekle', 'oluştur', 'yaz', 'düzenle', 'değiştir', 'güncelle', 'sil', 'kaldır', 'taşı', 'düzelt', 'kur', 'uygula', 'entegre et',
+  'ekle', 'oluştur', 'yaz', 'düzenle', 'değiştir', 'güncelle', 'sil', 'kaldır', 'taşı', 'düzelt', 'kur', 'uygula', 'entegre e[td]',
   'refactor', 'implement', 'create', 'add', 'build', 'write', 'edit', 'update', 'fix', 'remove', 'delete', 'migrate', 'install',
 ];
-const TURKISH_VERB_SUFFIX = '(?:ır|ir|ur|ür|ar|er|r|sın|sin|sana|sene|alım|elim|ayım|eyim|mısın|misin|ın|in|un|ün|ma|me)?';
+const TURKISH_VERB_SUFFIX =
+  '(?:ır|ir|ur|ür|ar|er|r|sın|sin|sun|sün|sana|sene|y?(?:alım|elim|ayım|eyim)|mısın|misin|musun|müsün|y?(?:ın|in|un|ün)(?:ız|iz|uz|üz)?|ma|me)?';
 const MUTATION =
   new RegExp(`(?<![\\p{L}\\p{N}])(?:${MUTATION_STEMS.join('|')})${TURKISH_VERB_SUFFIX}(?![\\p{L}\\p{N}])`, 'iu');
 
@@ -81,13 +82,13 @@ function messageFor(kind, skillPath) {
   }
   if (kind === 'gear2-explicit') {
     return `[prompt-optimizer · Gear 2] Read ${skillPath} and its matching model reference file. ` +
-      `Perform silent repo recon, ask at most ONE plain question only if critically ambiguous (otherwise zero), ` +
-      `render the <details> Execution Contract card, and WAIT for user approval before modifying any files.\n`;
+      `Perform silent repo recon, dynamically match 0-3 relevant skills from available skills, ask at most ONE plain question only if critically ambiguous (otherwise zero), ` +
+      `render the <details> Execution Contract card (including Matched Skills when >=1 match), and WAIT for user approval before modifying any files.\n`;
   }
   if (kind === 'gear2-auto') {
     return `[prompt-optimizer · Auto Gate] Before calling Edit, Write, MultiEdit, or mutating Bash on this request, ` +
       `follow ${skillPath}: if this only continues work the user already approved in this session, proceed (Gear 0); ` +
-      `if it is a new multi-file change, perform silent recon, ask at most 1 plain question ONLY if a critical decision is missing, ` +
+      `if it is a new multi-file change, perform silent recon, dynamically match 0-3 relevant installed skills, ask at most 1 plain question ONLY if a critical decision is missing, ` +
       `present the collapsible <details> Execution Contract card in the user's language, and pause for approval.\n`;
   }
   return '';

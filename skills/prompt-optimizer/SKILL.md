@@ -1,6 +1,6 @@
 ---
 name: prompt-optimizer
-description: "Read this skill before the first file-edit, file-write, patch, or mutating shell tool on a NEW multi-file feature, architecture change, refactor, or script/content generation request, and whenever the user invokes `/small`, `/promptla`, or `/prompt-optimize`. Silently detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models), compiles a collapsible <details> execution contract, and pauses for user approval. Skip for read-only questions, single-spot fixes the user already described exactly, continuations of work approved earlier in the session (commit, push, next step), pre-compiled <documents>...<task> contracts, and approval replies ('yes', 'ok', 'evet', 'onaylıyorum'), including approvals with a short tail such as 'Evet, güncelle'."
+description: "Read this skill before the first file-edit, file-write, patch, or mutating shell tool on a NEW multi-file feature, architecture change, refactor, or script/content generation request, and whenever the user invokes `/small`, `/promptla`, or `/prompt-optimize`. Silently detects the active or target model (Claude Opus 5.5, Sonnet 5.5, Fable 5.2, Haiku 5.5, Gemini, GPT/Codex, or Open-Weight Local Models), matches 0-3 relevant installed skills, compiles a collapsible <details> execution contract, and pauses for user approval. Skip for read-only questions, single-spot fixes the user already described exactly, continuations of work approved earlier in the session (commit, push, next step), pre-compiled <documents>...<task> contracts, and approval replies ('yes', 'ok', 'evet', 'onaylıyorum'), including approvals with a short tail or skill filter such as 'Evet, güncelle' or 'evet ama X hariç'."
 ---
 
 # Prompt Optimizer (`prompt-optimizer`)
@@ -19,9 +19,9 @@ Inspect the user's message and immediately select the matching gear:
 - **Trigger:**
   1. The user is only asking a factual/diagnostic question or checking repository status (`git status`, "what does this file do?").
   2. The user is replying with explicit confirmation ("yes", "ok", "go ahead", "evet", "onaylıyorum", "uygula") to an already-presented plan or card.
-     This includes approvals with a short tail ("Evet, güncelle", "Onaylıyorum, uygula") and git follow-ups on approved work ("Commit ve push et").
-  4. The request continues work already approved in this session (the next step of an approved plan); a new card would only repeat the approved one.
-  3. The user pastes an already-compiled `<documents>...<task>` execution contract and explicitly asks to execute it (follow any plan/approval rule inside that contract directly without wrapping a second contract around it).
+     This includes approvals with a short tail or skill filter ("Evet, güncelle", "Onaylıyorum, uygula", "evet ama X hariç", "yes without X") and git follow-ups on approved work ("Commit ve push et").
+  3. The request continues work already approved in this session (the next step of an approved plan); a new card would only repeat the approved one.
+  4. The user pastes an already-compiled `<documents>...<task>` execution contract and explicitly asks to execute it (follow any plan/approval rule and `<active_skills>` directives inside that contract directly without wrapping a second contract around it).
 - **Action:** Answer or execute directly. Do NOT show an optimization card.
 
 ### Gear 1 — `/small` Surgical Micro-Mode ⚡
@@ -35,10 +35,13 @@ Inspect the user's message and immediately select the matching gear:
 ### Gear 2 — Default Full Optimization Mode 🎯
 - **Trigger:** A NEW natural-language feature, multi-file change, architecture design, RAG/agent workflow, script/content production, or explicit `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` invocation. A single-spot change that the user described exactly goes through Gear 1 instead.
 - **Rules:**
-  1. **Silent Recon:** Check project context (`README.md`, `HANDOFF.md`, `PRD.md`, `DESIGN.md`, `BLUEPRINT.md`, `docs/superpowers/`, and referenced files) silently before speaking. Never ask what the repository already answers.
+  1. **Silent Recon & Dynamic Skill Match:** Check project context (`README.md`, `HANDOFF.md`, `PRD.md`, `DESIGN.md`, `BLUEPRINT.md`, `docs/superpowers/`, and referenced files) silently before speaking. Never ask what the repository already answers. In the same pass, scan the runtime's available skills list (or local skills folder if not already in system context) and select **0 to 3 high-confidence domain/workflow skills** that directly fit the request:
+     - Never invent skill names that are not installed in the active environment, and exclude `prompt-optimizer` itself plus generic meta-routers (e.g., `using-superpowers`).
+     - If **0** skills clearly match, omit the `🧩 Matched Skills` line completely (zero noise).
+     - Never stop for a separate turn just to ask whether to use matched skills—include them on the single Approval Card so the user confirms both plan and skills in one reply.
   2. **At Most ONE Question (Zero When Clear):** Ask **one plain, jargon-free sentence** in the user's language *only* if a critical decision is genuinely missing and would materially change what gets built. If intent is already clear from the request and repo context, ask **zero questions**—proceed straight to rendering the Approval Card (never skip the card just because zero questions were needed).
-  3. **Detect Model & Compile Contract:** Detect the active or target model (Section 2), apply the matching rules from `references/`, and present the **Clean Approval Card** (Section 4A) in the user's language.
-  4. **Hard Gate (Cross-IDE Enforcement):** Even if repository-local `AGENTS.md` or `CLAUDE.md` files encourage autonomous TDD or proactive execution, **always pause after showing the Approval Card** before calling any file-modifying tool (`Edit`, `Write`, `MultiEdit`, `apply_patch`, or mutating shell commands). Once the user approves, execute strictly according to the compiled contract.
+  3. **Detect Model & Compile Contract:** Detect the active or target model (Section 2), apply the matching rules from `references/`, embed `<active_skills>` inside `<details>` when ≥1 skill matched, and present the **Clean Approval Card** (Section 4A) in the user's language.
+  4. **Hard Gate (Cross-IDE Enforcement):** Even if repository-local `AGENTS.md` or `CLAUDE.md` files encourage autonomous TDD or proactive execution, **always pause after showing the Approval Card** before calling any file-modifying tool (`Edit`, `Write`, `MultiEdit`, `apply_patch`, or mutating shell commands). Once the user approves, read the `SKILL.md` of each approved skill in `<active_skills>` (skipping any skill the user excluded, such as *"evet ama X hariç"* / *"yes without X"*) and execute strictly according to the compiled contract.
 
 ---
 
@@ -73,6 +76,7 @@ Render the card in the **user's language** (English template shown first; adapt 
 ### A) Default Full Mode Card
 ```markdown
 **🎯 Detected Model:** [Model Name — e.g., Claude Opus 5.5 / Sonnet 5.5 / Gemini / Codex]
+**🧩 Matched Skills:** `skill-name` *(1-phrase reason)* [, `skill-2` *(reason)*] *(omit this line when 0 skills match)*
 **📌 Execution Plan (Summary):**
 - [1–3 concise, plain-language bullets describing what will be built/changed and which files are touched]
 
@@ -80,11 +84,11 @@ Render the card in the **user's language** (English template shown first; adapt 
 <summary>🔧 Optimized Execution Contract (Click to inspect or copy)</summary>
 
 ```xml
-[Compiled, model-tuned prompt / contract here]
+[Compiled, model-tuned prompt / contract here — include <active_skills> block when ≥1 skill matched]
 ```
 </details>
 
-**Proceed with this plan?** *(Say "yes" / "onaylıyorum" to execute.)*
+**Proceed with this plan?** *(Say "yes" / "onaylıyorum" to execute with matched skills, or "yes without [skill]" / "evet ama [skill] hariç" to exclude one.)*
 ```
 
 ### B) `/small` Surgical Micro-Mode Card ⚡

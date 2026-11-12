@@ -41,3 +41,11 @@ Avoid generic AI clichés ("breathtaking", "seamless", em-dashes `—`, or cooki
 3. Synthesize the answer strictly from those quotes; if something cannot be verified from the sources, state what is missing rather than guessing.
 </grounded_analysis>
 ```
+
+## 6. Matched Domain & Workflow Skills (Include When ≥1 Installed Skill Matches)
+```xml
+<active_skills>
+Before writing or editing files, read the `SKILL.md` instructions for each approved skill below and follow its domain rules (skip any skill the user explicitly excluded in their approval reply):
+- [skill-name]: [1-phrase reason why it applies to this task]
+</active_skills>
+```

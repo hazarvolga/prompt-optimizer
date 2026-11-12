@@ -17,7 +17,7 @@
 
 # 🇬🇧 English Documentation
 
-> **What's new in 1.1.0:** approvals with a short tail ("Evet, güncelle") and git follow-ups ("Commit ve push et") no longer re-open the approval gate; Turkish words like "yazılım" no longer trigger it, and Turkish verb forms like "düzeltir misin" now do; the skill loads only for new multi-file work; API rules were checked against the Claude API reference. Details and reasons: [CHANGELOG.md](CHANGELOG.md).
+> **What's new in 1.2.0:** Gear 2 now dynamically matches **0–3 relevant installed skills** from your environment, shows them on the single Approval Card (`🧩 Matched Skills`), and embeds `<active_skills>` into `<details>` so one `"yes"` loads their `SKILL.md` rules without an extra round-trip (or `"yes without X"` skips one). Also adds Turkish vowel-stem `y`-buffer imperatives (`ekleyin`, `güncelleyiniz`, `ekleyelim`, `entegre edin`) and recursive rule conflict auditing (`1.1.1`). Full history: [CHANGELOG.md](CHANGELOG.md).
 
 **Write what you want in plain everyday language. Let the agent compile the engineering-grade prompt contract.**
 
@@ -38,7 +38,7 @@ Modern frontier models fail in two predictable ways when given raw human prompts
 |---|---|---|
 | **Gear 0: Bypass** | Read-only questions (`git status`, *"how does auth work?"*), approvals (`ok`, `yes`), or pre-compiled `<documents>...<task>` contracts | Zero friction. Answers or executes immediately without wrapping a second card. |
 | **Gear 1: `/small` Surgical Mode ⚡** | Start message with `/small` | Zero interview. Reads target file, locks **zero-collateral-edit** rules, and presents a **3-line compact approval card**. |
-| **Gear 2: Full Contract Mode 🎯** | Features, refactors, RAG, architecture, `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` | Silent repo recon → **0 questions** if clear (at most **1 plain question** if critically ambiguous) → compiles XML/Markdown contract → clean approval gate. |
+| **Gear 2: Full Contract Mode 🎯** | Features, refactors, RAG, architecture, `/prompt-optimize`, `/promptla`, or `$prompt-optimizer` | Silent repo recon + **0–3 dynamic skill matches** → **0 questions** if clear (at most **1 plain question** if critically ambiguous) → compiles XML/Markdown contract (`<active_skills>`) → single-pass approval gate. |
 
 ### Built-In Model Intelligence
 
@@ -93,7 +93,7 @@ Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that d
 
 # 🇹🇷 Türkçe Dokümantasyon
 
-> **1.1.0 ile gelenler:** Kısa ek içeren onaylar ("Evet, güncelle") ve git devam mesajları ("Commit ve push et") onay kapısını artık yeniden açmıyor; "yazılım" gibi kelimeler kapıyı tetiklemiyor, "düzeltir misin" gibi fiil çekimleri ise artık tetikliyor; skill yalnız yeni ve çok dosyalı işlerde yükleniyor; API kuralları resmi belgeyle doğrulandı. Ayrıntılar ve nedenleri: [CHANGELOG.md](CHANGELOG.md).
+> **1.2.0 ile gelenler:** Vites 2 artık ortamınızda yüklü yetenekler arasından konuya tam uyan **0–3 yeteneği dinamik seçip** tek onay kartında (`🧩 Matched Skills`) gösteriyor ve `<details>` içindeki kontrata `<active_skills>` olarak işliyor; tek bir `"evet"` ile ilgili `SKILL.md` kuralları da okunarak uygulanıyor (`"evet ama X hariç"` ile istediğiniz yeteneği dışarıda bırakabilirsiniz). Ayrıca Türkçe ünlüyle biten fiillerde `y` kaynaştırma ekleri (`ekleyin`, `güncelleyiniz`, `ekleyelim`, `entegre edin`) ve alt klasör kural çakışma taraması (`1.1.1`) eklendi. Ayrıntılar: [CHANGELOG.md](CHANGELOG.md).
 
 **Aklınızdakini günlük doğal dille yazın; ajanınız dosyalarınıza dokunmadan önce isteğinizi o modele özel kusursuz bir mühendislik kontratına dönüştürsün.**
 
@@ -108,7 +108,7 @@ Note that `Claude Desktop` runs `Chat` and `Cowork` inside an isolated VM that d
 |---|---|---|
 | **Vites 0: Doğrudan Geçiş** | Salt okuma soruları (`git status`, *"bu dosya ne yapıyor?"*), onay yanıtları (`ok`, `evet`, `onaylıyorum`) veya zaten derlenmiş `<documents>...<task>` kontratları | Sizi bekletmez; ikinci kez kart açmadan doğrudan yanıtlar veya uygular. |
 | **Vites 1: `/small` Cerrahi Hızlı Mod ⚡** | Mesajın başına `/small` yazıldığında | Soru sormaz. Hedef dosyayı okur, **çevredeki kodlara dokunmama kilidi** koyar ve **3 satırlık hızlı onay kartı** sunar. |
-| **Vites 2: Tam Kontrat Modu 🎯** | Yeni özellik, mimari, refactor, RAG/içerik üretimi veya `/promptla`, `/prompt-optimize`, `$prompt-optimizer` | Projeyi sessizce inceler → niyet netse **0 soru** (kritik belirsizlik varsa **en fazla 1 jargonsuz soru**) sorar → modele özel `<details>` kontrat kartını sunar ve onayınızı bekler. |
+| **Vites 2: Tam Kontrat Modu 🎯** | Yeni özellik, mimari, refactor, RAG/içerik üretimi veya `/promptla`, `/prompt-optimize`, `$prompt-optimizer` | Projeyi sessizce inceler + **uygun 0–3 yüklü yeteneği eşleştirir** → niyet netse **0 soru** (kritik belirsizlik varsa **en fazla 1 jargonsuz soru**) sorar → modele özel `<details>` kontrat kartını sunar ve tek adımda onayınızı bekler. |
 
 ### Hızlı Kurulum ve Çoklu-IDE Senkronizasyonu (TR)
 
@@ -138,13 +138,14 @@ chmod +x install.sh
 >
 > **Output:**
 > **🎯 Detected Model:** Claude Sonnet 5.5
+> **🧩 Matched Skills:** `nestjs-patterns` *(service & DTO validation)*, `test-driven-development` *(unit test verification)*
 > **📌 Execution Plan (Summary):**
 > - Add structured enum classification (`low | normal | urgent` + module taxonomy) in `src/tickets/router.service.ts`
 > - Validate schema adherence and run unit tests before reporting completion
 >
 > `<details><summary>🔧 Optimized Execution Contract (Click to inspect or copy)</summary> ... </details>`
 >
-> **Proceed with this plan?**
+> **Proceed with this plan?** *(Say "yes" to execute with matched skills, or "yes without [skill]" to skip one.)*
 
 ### Surgical Mode / `/small` Hızlı Mod ⚡
 > **Input:** `/small üst menüdeki giriş butonunun rengini #0F172A yap`

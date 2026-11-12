@@ -1,5 +1,20 @@
 # Changelog / Değişiklik Günlüğü
 
+## 1.2.0 (2026-11-12)
+
+### 1. Dynamic Skill Matching inside the unified Approval Card / Tek Onay Kartında Dinamik Yetenek Eşleştirme
+
+- **Problem:** Even when `prompt-optimizer` understood the topic of a request, agents in Claude Code or Codex often skipped loading the matching domain `SKILL.md` files (because they had already loaded `prompt-optimizer` in that turn), or standalone copied `<details>` contracts lacked explicit skill instructions. Conversely, stopping for a separate turn to ask *"Should I use skills X and Y?"* would force double confirmation.
+- **Sorun:** `prompt-optimizer` konuyu anlasa bile ajan o turda zaten bu skill'i okuduğu için konuya ait diğer `SKILL.md` dosyalarını açmayı atlayabiliyordu; ayrı bir mesajda *"Şu skilleri kullanayım mı?"* diye sormak ise kullanıcıyı iki kez onay vermeye zorluyordu.
+- **Fix:** During Gear 2 Silent Recon, the skill dynamically scans the runtime's available skills list, picks **0 to 3 high-confidence domain/workflow skills** (omitting the line when 0 match, and never hardcoding environment-specific names), displays `🧩 Matched Skills:` on the single Approval Card, and embeds `<active_skills>` inside `<details>`. Saying `"yes" / "evet"` runs with them; saying `"yes without X" / "evet ama X hariç"` skips `X` while still bypassing the `UserPromptSubmit` gate cleanly.
+- **Çözüm:** Vites 2 sessiz keşif adımında yüklü yetenekler dinamik taranır, konuya tam uyan **en fazla 1-3 skill** tek onay kartında (`🧩 Matched Skills`) gösterilir ve `<details>` kontratına `<active_skills>` bloğu olarak yazılır. Tek bir `"evet"` yanıtıyla ilgili `SKILL.md` dosyaları okunarak uygulanır; `"evet ama X hariç"` yanıtı ise kapıyı yeniden açmadan `X` yeteneğini devre dışı bırakır.
+
+### 2. Turkish vowel-stem `y`-buffer and `t->d` softening in `hooks/prompt-optimizer-gate.mjs` / Türkçe `y` kaynaştırma ve ünsüz yumuşaması
+
+- **Observed (1.1.1):** Polite or optative Turkish imperatives on vowel-ending verb stems (`"M25 modülünü ekleyin"`, `"bu dosyayı güncelleyiniz"`, `"yeni modülü ekleyelim"`, `"klasörü taşıyın"`) and softened `entegre et` forms (`"sisteme entegre edin"`) bypassed the gate because `TURKISH_VERB_SUFFIX` lacked the `y` buffer (`-yin/-yiniz/-yelim`) and `t->d` alternation.
+- **Gözlenen:** Ünlüyle biten fiil köklerinin `y` kaynaştırmalı çekimleri (`ekleyin`, `güncelleyiniz`, `ekleyelim`, `taşıyın`) ve `entegre edin` biçimi `TURKISH_VERB_SUFFIX` tarafından yakalanmıyordu.
+- **Fix:** Added `y?` buffer support, polite plural `-iniz/-ınız/-unuz/-ünüz`, `-sun/-sün/-musun/-müsün`, and `entegre e[td]` to `hooks/prompt-optimizer-gate.mjs`, with regression tests in `hooks/prompt-optimizer-gate.test.mjs`, and tidied Gear 0 list numbering in `SKILL.md`.
+
 ## 1.1.1 (2026-11-12)
 
 ### Conflict audit missed nested rule files / Çakışma denetimi alt klasördeki kuralları kaçırıyordu
