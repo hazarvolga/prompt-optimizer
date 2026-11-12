@@ -1,5 +1,14 @@
 # Changelog / Değişiklik Günlüğü
 
+## 1.1.1 (2026-11-12)
+
+### Conflict audit missed nested rule files / Çakışma denetimi alt klasördeki kuralları kaçırıyordu
+
+- **Observed (1.1.0):** `install.sh` reported "Zero conflicting override rules" while `~/.claude/rules/ecc/common/agents.md` still said "No user prompt needed". The audit read only four fixed paths, so rule sets installed in sub-folders were never checked.
+- **Gözlenen:** Denetim yalnız dört sabit dosyaya bakıyordu; `rules/` altındaki alt klasörlerde duran "No user prompt needed" kuralı görünmüyordu.
+- **Fix:** the audit now scans every `*.md` file under `~/.claude/rules` and `~/.codex/rules` at any depth, plus `~/.gemini/GEMINI.md`, and prints the file and line number of each match.
+- **Why:** a single forgotten rule file is enough for an agent to skip the approval gate; the audit exists to find exactly that file.
+
 ## 1.1.0 (2026-11-12)
 
 Fixes found while using 1.0.0 in a real Turkish-language project. Each change lists the observed problem, the fix, and why.

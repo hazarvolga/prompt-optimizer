@@ -1,6 +1,6 @@
 {
   "name": "prompt-optimizer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Two-gear (Full + /small surgical), model-aware prompt compiler and pre-execution contract gate for Claude 5.x, Gemini, Codex, and local coding agents.",
   "author": {
     "name": "Hazar Volga Ekiz",

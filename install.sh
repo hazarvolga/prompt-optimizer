@@ -53,12 +53,22 @@ fi
 echo ""
 echo "Running multi-IDE override conflict audit..."
 CONFLICTS=0
-for FILE in "$HOME/.codex/AGENTS.md" "$HOME/.claude/CLAUDE.md" "$HOME/.claude/rules/agents.md" "$HOME/.codex/rules/agents.md"; do
-  if [ -f "$FILE" ]; then
-    if grep -qE "No user prompt needed|Use agents proactively without user prompt|Give complete working solutions" "$FILE" 2>/dev/null; then
-      echo "  ! Warning: '$FILE' contains autonomous execution directives ('No user prompt needed' / 'Give complete working solutions') that can override the prompt-optimizer approval gate."
-      CONFLICTS=$((CONFLICTS + 1))
-    fi
+# Every global instruction file the agents load: top-level files plus all *.md files under rules/
+# at any depth (1.0.0 and 1.1.0 missed nested rule sets such as ~/.claude/rules/ecc/common/agents.md).
+AUDIT_FILES=()
+for FILE in "$HOME/.codex/AGENTS.md" "$HOME/.claude/CLAUDE.md" "$HOME/.gemini/GEMINI.md"; do
+  [ -f "$FILE" ] && AUDIT_FILES+=("$FILE")
+done
+for RULES_DIR in "$HOME/.claude/rules" "$HOME/.codex/rules"; do
+  if [ -d "$RULES_DIR" ]; then
+    while IFS= read -r FILE; do AUDIT_FILES+=("$FILE"); done < <(find "$RULES_DIR" -type f -name '*.md')
+  fi
+done
+for FILE in "${AUDIT_FILES[@]+"${AUDIT_FILES[@]}"}"; do
+  MATCH=$(grep -nE "No user prompt needed|Use agents proactively without user prompt|Give complete working solutions" "$FILE" 2>/dev/null | head -1 | cut -d: -f1 || true)
+  if [ -n "$MATCH" ]; then
+    echo "  ! Warning: '$FILE' line $MATCH contains an autonomous execution directive ('No user prompt needed' / 'Give complete working solutions') that can override the prompt-optimizer approval gate."
+    CONFLICTS=$((CONFLICTS + 1))
   fi
 done
 
